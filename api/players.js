@@ -57,12 +57,24 @@ function rowToPlayer(headers, row) {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin || '';
+  const allowedOrigin = origin.includes('intranet-pink.vercel.app') || origin.includes('localhost')
+    ? origin
+    : 'https://intranet-pink.vercel.app';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
+  }
+
+  // Verify Discord session
+  const { verifySession } = await import('./_lib/auth.js');
+  const session = verifySession(req);
+  if (!session || !session.hasRequiredRole) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
   }
 
   try {

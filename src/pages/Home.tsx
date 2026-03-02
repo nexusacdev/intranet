@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Shield, Briefcase, Calendar, CheckCircle, ChevronDown, Award, MousePointer2 } from 'lucide-react';
+import { User, Shield, Briefcase, Calendar, CheckCircle, ChevronDown, ChevronUp, Award, MousePointer2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { BUDGET_ITEMS, CONTRACT_DATA } from '../../constants';
@@ -9,11 +9,9 @@ const Header = () => (
   <header className="fixed top-0 left-0 w-full z-50 glass border-b border-white/5 px-6 py-4 flex justify-between items-center">
     <div className="flex items-center gap-3">
       <div className="w-8 h-8 flex items-center justify-center">
-        <svg viewBox="0 0 200 200" className="w-full h-full fill-agency-red">
-          <path d="M182.5 35C158.5 48 130.5 52 100 52C69.5 52 41.5 48 17.5 35L28 65C28 65 24 70 38 76C41.5 77.5 40 92 40 92L62 165L88 115H112L138 165L160 92C160 92 158.5 77.5 162 76C176 70 172 65 172 65L182.5 35ZM80 82H120V102H80V82Z" />
-        </svg>
+        <img src="/src/logo.png" alt="Agency Dojo" className="w-full h-full object-contain" />
       </div>
-      <div className="font-display font-bold text-xl tracking-wider text-white">AGENCY CLAN <span className="text-agency-red">DOJO</span></div>
+      <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="font-display font-bold text-xl tracking-wider text-white cursor-pointer hover:opacity-80 transition-opacity">AGENCY CLAN <span className="text-agency-red">DOJO</span></a>
     </div>
     <div className="hidden md:flex gap-8 text-xs font-medium uppercase tracking-[0.2em] text-white/60">
       <a href="#teams" className="hover:text-agency-red transition-colors">Academy Teams</a>
@@ -29,7 +27,7 @@ const Hero = () => (
     <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 pointer-events-none"></div>
     <div className="max-w-4xl mx-auto z-10 space-y-8">
       <div className="inline-block px-4 py-1.5 rounded-full border border-agency-red/30 bg-agency-red/5 text-agency-red font-display text-sm tracking-widest uppercase mb-4 animate-pulse">
-        Q1 2026 Recruitment • Academy U20
+        2026 Recruitment • Dojo U20
       </div>
       <h1 className="text-6xl md:text-8xl font-display font-bold tracking-tighter leading-none text-white">
         ELEVATE YOUR <br />
@@ -37,7 +35,7 @@ const Hero = () => (
       </h1>
       <p className="text-lg md:text-xl text-agency-muted max-w-2xl mx-auto font-light leading-relaxed">
         Bem-vindo à nova era do CS2 competitivo. <br />
-        O recrutamento para os futuros talentos da Academy começou.
+        O recrutamento para os futuros talentos do Dojo começou.
       </p>
       <div className="flex flex-col md:flex-row items-center justify-center gap-6 pt-8">
         <a href="#budget" className="px-10 py-4 bg-white text-black font-semibold rounded-full hover:bg-agency-red hover:text-white transition-all duration-300 transform hover:scale-105 active:scale-95">
@@ -122,7 +120,7 @@ const TeamsSection = ({ players }: { players: Player[] }) => {
 const BudgetSection = () => (
   <section id="budget" className="py-24 bg-agency-surface/50">
     <div className="max-w-7xl mx-auto px-6">
-      <SectionHeading subtitle="Financial Structure" title="Q1 2026: Budget Breakdown" />
+      <SectionHeading subtitle="Financial Structure" title="2026: Budget Breakdown" />
       
       <div className="grid lg:grid-cols-3 gap-8 mb-16">
         <div className="p-6 rounded-2xl glass flex items-center gap-5">
@@ -149,7 +147,7 @@ const BudgetSection = () => (
           </div>
           <div>
             <p className="text-xs text-agency-muted uppercase font-bold tracking-widest">Scholarship Type</p>
-            <p className="text-xl font-display text-white">Full Academy Support</p>
+            <p className="text-xl font-display text-white">Full Dojo Support</p>
           </div>
         </div>
       </div>
@@ -200,7 +198,7 @@ const TermsSection = () => (
       </div>
       <div className="flex gap-4">
         <span className="text-agency-red font-bold text-xl mt-1">**</span>
-        <p>Selected players can select only one from the special conditions marked with two asterisks (**) for each contract cycle (Warmup VIP, REFRAG, FACEIT Premium, or Leetify Pro).</p>
+        <p>After the first stable month, each player may choose one premium service from the options marked with two asterisks (**): Warmup VIP, REFRAG Player, FACEIT Premium, or Leetify Pro.</p>
       </div>
       <p className="p-8 rounded-2xl glass border-l-4 border-agency-red text-sm italic">
         "The organization reserves the right to terminate the contract with any player at its sole discretion. Should any player elect to terminate the agreement prior to its natural expiration, a contractual release fee of two hundred euros (€200) shall be payable to TAC within thirty (30) days."
@@ -212,7 +210,8 @@ const TermsSection = () => (
         </div>
         <div className="space-y-2">
           <p className="font-bold text-white uppercase tracking-widest text-xs">Prize Split</p>
-          <p className="text-sm font-display text-white">{CONTRACT_DATA.prizes}</p>
+          <p className="text-sm font-display text-white">LAN: 40% TAC — 60% Players</p>
+          <p className="text-sm font-display text-white">Online: 30% TAC — 70% Players</p>
         </div>
       </div>
     </div>
@@ -323,7 +322,7 @@ const SignSection = ({ players }: { players: Player[] }) => {
           </button>
           
           <p className="text-[10px] text-agency-muted/50 uppercase tracking-tighter">
-            By clicking continue, you agree to all terms of the Agency Dojo Academy program as of February 15, 2026.
+            By clicking continue, you agree to all terms of the Agency Dojo Portal program as of March 2, 2026.
           </p>
         </form>
       </div>
@@ -331,14 +330,18 @@ const SignSection = ({ players }: { players: Player[] }) => {
   );
 };
 
+const ScrollToTop = () => (
+  <button
+    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+    className="fixed bottom-8 right-8 z-50 w-12 h-12 rounded-full bg-agency-red/80 hover:bg-agency-red text-white flex items-center justify-center transition-colors shadow-lg shadow-agency-red/20"
+    aria-label="Scroll to top"
+  >
+    <ChevronUp size={24} />
+  </button>
+);
+
 const Footer = () => (
   <footer className="py-12 border-t border-white/5 text-center text-agency-muted text-xs space-y-6">
-    <div className="flex justify-center gap-8 mb-4">
-      <a href="https://dojo.theagencyclan.pt/" className="hover:text-white transition-colors">Official Dojo</a>
-      <a href="#" className="hover:text-white transition-colors">Instagram</a>
-      <a href="#" className="hover:text-white transition-colors">Twitter (X)</a>
-      <a href="#" className="hover:text-white transition-colors">Discord</a>
-    </div>
     <p>© 2026 AGENCY CLAN. ALL RIGHTS RESERVED. CS2 COMPETITIVE EXCELLENCE.</p>
     <div className="w-12 h-1 bg-agency-red mx-auto"></div>
   </footer>
@@ -358,6 +361,7 @@ export default function Home() {
         <SignSection players={players} />
       </div>
       <Footer />
+      <ScrollToTop />
     </div>
   );
 }

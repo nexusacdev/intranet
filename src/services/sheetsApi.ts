@@ -4,7 +4,7 @@ const API_URL = '/api/players';
 
 export async function fetchPlayers(): Promise<Player[]> {
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(API_URL, { credentials: 'same-origin' });
     const json = await res.json();
 
     if (!json.success) {
@@ -55,6 +55,7 @@ export async function updatePlayerInSheet(
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
     body: JSON.stringify({ playerId, updates }),
   });
 

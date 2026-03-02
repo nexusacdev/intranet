@@ -7,8 +7,8 @@ export const CONTRACT_DATA: ContractData = {
   coach: "Nuno 'Vegetal' Gaspar",
   esportsHead: "Marcos 'faithal' Oliveira",
   management: ["Diogo 'flyme' Pereira", "Luis 'XoulZ' Brandão"],
-  purpose: "4 month academy contract",
-  prizes: "40% TAC - 60% Players / 30% TAC - 70% Players"
+  purpose: "Contrato 2026 — Duração 4 meses",
+  prizes: "LAN: 40% TAC — 60% Players | Online: 30% TAC — 70% Players"
 };
 
 export const BUDGET_ITEMS: BudgetItem[] = [
@@ -21,20 +21,20 @@ export const BUDGET_ITEMS: BudgetItem[] = [
   { id: '7', condition: 'Leetify Pro**', category: 'Analytics tool', description: '6€/ month', type: 'Per Month', amount: 180.00, highlighted: true },
   { id: '8', condition: 'Master classes', category: 'Learning', description: '20€/ hour', type: 'Per Class', amount: 480.00 },
   { id: '9', condition: 'Media day*', category: 'Media', description: 'Full media day shoot', type: 'Media', amount: 200.00, highlighted: true },
-  { id: '10', condition: 'Agency Dojo U2 Tournment', category: 'Tournment', description: '2-3 day', type: 'Prize pool', amount: 100.00 }
+  { id: '10', condition: 'Agency Dojo U2 Tournment', category: 'Tournment', description: '1 day', type: 'Prize pool', amount: 100.00 }
 ];
 
 export const INITIAL_PLAYERS: Player[] = [
-  // Team Shinoby
-  { id: 'p1', nick: 'Nick1', name: 'Name1', team: 'Shinoby', signed: false },
-  { id: 'p2', nick: 'Nick2', name: 'Name2', team: 'Shinoby', signed: false },
-  { id: 'p3', nick: 'Nick3', name: 'Name3', team: 'Shinoby', signed: false },
-  { id: 'p4', nick: 'Nick4', name: 'Name4', team: 'Shinoby', signed: false },
-  { id: 'p5', nick: 'Nick5', name: 'Name5', team: 'Shinoby', signed: false },
-  // Team Ronin
-  { id: 'p6', nick: 'Nick6', name: 'Name6', team: 'Ronin', signed: false },
-  { id: 'p7', nick: 'Nick7', name: 'Name7', team: 'Ronin', signed: false },
-  { id: 'p8', nick: 'Nick8', name: 'Name8', team: 'Ronin', signed: false },
-  { id: 'p9', nick: 'Nick9', name: 'Name9', team: 'Ronin', signed: false },
-  { id: 'p10', nick: 'Nick10', name: 'Name10', team: 'Ronin', signed: false },
+  // Team RaideN
+  { id: 'p1', nick: 'PEiNE', name: 'Paulo Sérgio Ferreira Nunes', team: 'RaideN', signed: false },
+  { id: 'p2', nick: 'X0ra', name: 'Simão Marcelino', team: 'RaideN', signed: false },
+  { id: 'p3', nick: 'FRONT', name: 'Gabriel da Silva Correia', team: 'RaideN', signed: false },
+  { id: 'p4', nick: 'Esteban', name: 'Esteban Kauã Henrique Santos Pina', team: 'RaideN', signed: false },
+  { id: 'p5', nick: 'Retrix', name: 'Diogo Pérez Rodrigues', team: 'RaideN', signed: false },
+  // Team KenshiN
+  { id: 'p6', nick: 'wh1ze', name: 'João Jácome Louro', team: 'KenshiN', signed: false },
+  { id: 'p7', nick: 'sw3tyzz', name: 'Simão Martins', team: 'KenshiN', signed: false },
+  { id: 'p8', nick: 'Mouran', name: 'João Moura', team: 'KenshiN', signed: false },
+  { id: 'p9', nick: 'Chipxx', name: 'Vitor Santos', team: 'KenshiN', signed: false },
+  { id: 'p10', nick: 'reo', name: 'Leonardo Alegre', team: 'KenshiN', signed: false },
 ];
