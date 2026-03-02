@@ -1,55 +1,65 @@
 // ============================================================
 // Google Apps Script - Deploy as Web App
 // ============================================================
-// SETUP INSTRUCTIONS:
+// SETUP:
 // 1. Create a new Google Sheet
-// 2. Add these headers in Row 1:
-//    id | name | nick | role | status | team | nif | address | playerSignature | adminSignature | signedAt
-// 3. Add the initial player data in rows 2-11 (or run the seed function below)
-// 4. Go to Extensions > Apps Script
-// 5. Paste this entire code into Code.gs
-// 6. Click Deploy > New deployment
-// 7. Select "Web app", set "Who has access" to "Anyone"
-// 8. Copy the deployment URL
+// 2. Go to Extensions > Apps Script
+// 3. Delete everything in Code.gs, paste this entire code
+// 4. Click the Run button (play icon) with "seedPlayers" selected
+//    - It will ask for permissions — click Allow
+//    - This creates the headers and player rows
+// 5. Click Deploy > New deployment
+// 6. Type: "Web app"
+// 7. Execute as: "Me"
+// 8. Who has access: "Anyone"
+// 9. Click Deploy and copy the URL
 // ============================================================
 
-const SHEET_NAME = 'Players';
-const HEADERS = ['id', 'name', 'nick', 'role', 'status', 'team', 'nif', 'address', 'playerSignature', 'adminSignature', 'signedAt'];
-
 function getSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Players');
   if (!sheet) {
     sheet = ss.getSheets()[0];
-    sheet.setName(SHEET_NAME);
+    sheet.setName('Players');
   }
   return sheet;
 }
 
-// GET - Read all players
+function rowToPlayer(headers, row) {
+  var player = {};
+  for (var j = 0; j < headers.length; j++) {
+    var key = headers[j];
+    var value = row[j];
+    if (key === 'signedAt' && value !== '' && value !== null && value !== undefined) {
+      value = Number(value);
+    }
+    if ((value === '' || value === null || value === undefined) &&
+        (key === 'nif' || key === 'address' || key === 'playerSignature' || key === 'adminSignature' || key === 'signedAt')) {
+      continue; // skip undefined optional fields
+    }
+    player[key] = value;
+  }
+  return player;
+}
+
+// Handles both GET (read) and GET with ?action=update (write)
 function doGet(e) {
   try {
-    const sheet = getSheet();
-    const data = sheet.getDataRange().getValues();
-    const headers = data[0];
-    const players = [];
+    var params = e ? e.parameter : {};
+    var action = params.action || 'read';
 
-    for (let i = 1; i < data.length; i++) {
-      const player = {};
-      for (let j = 0; j < headers.length; j++) {
-        const key = headers[j];
-        let value = data[i][j];
-        // Convert signedAt back to number
-        if (key === 'signedAt' && value !== '' && value !== null) {
-          value = Number(value);
-        }
-        // Keep empty strings as undefined for optional fields
-        if (value === '' && ['nif', 'address', 'playerSignature', 'adminSignature', 'signedAt'].includes(key)) {
-          value = undefined;
-        }
-        player[key] = value;
-      }
-      players.push(player);
+    if (action === 'update') {
+      return handleUpdate(params);
+    }
+
+    // Default: return all players
+    var sheet = getSheet();
+    var data = sheet.getDataRange().getValues();
+    var headers = data[0];
+    var players = [];
+
+    for (var i = 1; i < data.length; i++) {
+      players.push(rowToPlayer(headers, data[i]));
     }
 
     return ContentService
@@ -62,64 +72,15 @@ function doGet(e) {
   }
 }
 
-// POST - Update a player
+// Also support POST as fallback
 function doPost(e) {
   try {
-    const body = JSON.parse(e.postData.contents);
-    const { action, playerId, updates } = body;
-
-    const sheet = getSheet();
-    const data = sheet.getDataRange().getValues();
-    const headers = data[0];
-    const idCol = headers.indexOf('id');
-
-    if (action === 'update' && playerId && updates) {
-      // Find the row with matching ID
-      let rowIndex = -1;
-      for (let i = 1; i < data.length; i++) {
-        if (data[i][idCol] === playerId) {
-          rowIndex = i + 1; // 1-indexed for Sheet API
-          break;
-        }
-      }
-
-      if (rowIndex === -1) {
-        return ContentService
-          .createTextOutput(JSON.stringify({ success: false, error: 'Player not found' }))
-          .setMimeType(ContentService.MimeType.JSON);
-      }
-
-      // Update each field from updates
-      for (const [key, value] of Object.entries(updates)) {
-        const colIndex = headers.indexOf(key);
-        if (colIndex !== -1) {
-          sheet.getRange(rowIndex, colIndex + 1).setValue(value !== undefined && value !== null ? value : '');
-        }
-      }
-
-      // Read back the updated row
-      const updatedRow = sheet.getRange(rowIndex, 1, 1, headers.length).getValues()[0];
-      const updatedPlayer = {};
-      for (let j = 0; j < headers.length; j++) {
-        const key = headers[j];
-        let value = updatedRow[j];
-        if (key === 'signedAt' && value !== '' && value !== null) {
-          value = Number(value);
-        }
-        if (value === '' && ['nif', 'address', 'playerSignature', 'adminSignature', 'signedAt'].includes(key)) {
-          value = undefined;
-        }
-        updatedPlayer[key] = value;
-      }
-
-      return ContentService
-        .createTextOutput(JSON.stringify({ success: true, data: updatedPlayer }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-
-    return ContentService
-      .createTextOutput(JSON.stringify({ success: false, error: 'Invalid action' }))
-      .setMimeType(ContentService.MimeType.JSON);
+    var body = JSON.parse(e.postData.contents);
+    return handleUpdate({
+      playerId: body.playerId,
+      updates: JSON.stringify(body.updates),
+      action: 'update'
+    });
   } catch (error) {
     return ContentService
       .createTextOutput(JSON.stringify({ success: false, error: error.message }))
@@ -127,16 +88,62 @@ function doPost(e) {
   }
 }
 
-// Run this function ONCE to seed the sheet with initial player data
+function handleUpdate(params) {
+  var playerId = params.playerId;
+  var updates = JSON.parse(params.updates);
+
+  var sheet = getSheet();
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var idCol = headers.indexOf('id');
+
+  // Find the row
+  var rowIndex = -1;
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][idCol] === playerId) {
+      rowIndex = i + 1;
+      break;
+    }
+  }
+
+  if (rowIndex === -1) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: 'Player not found: ' + playerId }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // Update each field
+  var keys = Object.keys(updates);
+  for (var k = 0; k < keys.length; k++) {
+    var key = keys[k];
+    var value = updates[key];
+    var colIndex = headers.indexOf(key);
+    if (colIndex !== -1) {
+      sheet.getRange(rowIndex, colIndex + 1).setValue(value !== undefined && value !== null ? value : '');
+    }
+  }
+
+  // Read back updated row
+  var updatedRow = sheet.getRange(rowIndex, 1, 1, headers.length).getValues()[0];
+  var updatedPlayer = rowToPlayer(headers, updatedRow);
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ success: true, data: updatedPlayer }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ============================================================
+// Run this ONCE to seed the spreadsheet with player data
+// Select "seedPlayers" from the dropdown and click Run
+// ============================================================
 function seedPlayers() {
-  const sheet = getSheet();
+  var sheet = getSheet();
   sheet.clear();
 
-  // Set headers
-  sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+  var headers = ['id', 'name', 'nick', 'role', 'status', 'team', 'nif', 'address', 'playerSignature', 'adminSignature', 'signedAt'];
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
 
-  // Initial player data
-  const players = [
+  var players = [
     ['p1', 'Paulo Sérgio Ferreira Nunes', 'PEiNE', 'Player', 'pending', 'RaideN', '', '', '', '', ''],
     ['p2', 'Simão Marcelino', 'X0ra', 'Player', 'pending', 'RaideN', '', '', '', '', ''],
     ['p3', 'Gabriel da Silva Correia', 'FRONT', 'Player', 'pending', 'RaideN', '', '', '', '', ''],
@@ -149,20 +156,13 @@ function seedPlayers() {
     ['p10', 'Leonardo Alegre', 'reo', 'Player', 'pending', 'KenshiN', '', '', '', '', ''],
   ];
 
-  sheet.getRange(2, 1, players.length, HEADERS.length).setValues(players);
+  sheet.getRange(2, 1, players.length, headers.length).setValues(players);
 
   // Format header row
-  const headerRange = sheet.getRange(1, 1, 1, HEADERS.length);
+  var headerRange = sheet.getRange(1, 1, 1, headers.length);
   headerRange.setFontWeight('bold');
   headerRange.setBackground('#4285f4');
   headerRange.setFontColor('#ffffff');
 
-  // Auto-resize columns (except signature columns which are large)
-  for (let i = 1; i <= HEADERS.length; i++) {
-    if (i !== 9 && i !== 10) { // Skip playerSignature and adminSignature columns
-      sheet.autoResizeColumn(i);
-    }
-  }
-
-  SpreadsheetApp.getUi().alert('Players seeded successfully!');
+  Logger.log('Players seeded successfully! Check your spreadsheet.');
 }

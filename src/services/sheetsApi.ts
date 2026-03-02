@@ -26,16 +26,14 @@ export async function updatePlayerInSheet(
     throw new Error('VITE_SHEETS_API_URL not configured');
   }
 
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' }, // Apps Script requires text/plain for CORS
-    body: JSON.stringify({
-      action: 'update',
-      playerId,
-      updates,
-    }),
+  // Use GET with query params to avoid CORS/redirect issues with POST
+  const params = new URLSearchParams({
+    action: 'update',
+    playerId,
+    updates: JSON.stringify(updates),
   });
 
+  const res = await fetch(`${API_URL}?${params.toString()}`);
   const json = await res.json();
 
   if (!json.success) {
