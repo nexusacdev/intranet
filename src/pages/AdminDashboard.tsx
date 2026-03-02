@@ -50,7 +50,8 @@ export default function AdminDashboard() {
           filename: `contract-${player.nick}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true, allowTaint: true, scrollY: -window.scrollY },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
         })
         .from(element)
         .save();
@@ -281,27 +282,27 @@ export default function AdminDashboard() {
       {pdfPlayer && (
         <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
           <div ref={pdfRef} style={{ width: '794px', background: 'white', color: '#111', padding: '48px 56px', fontFamily: 'Inter, sans-serif', fontSize: '13px', lineHeight: '1.7' }}>
-            <div style={{ textAlign: 'center', marginBottom: '32px', borderBottom: '2px solid #F5333F', paddingBottom: '24px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '32px', borderBottom: '2px solid #F5333F', paddingBottom: '24px', pageBreakInside: 'avoid' }}>
               <img src={logoSrc} alt="Agency Clan" style={{ width: '56px', height: '56px', margin: '0 auto 12px' }} />
               <h1 style={{ fontSize: '22px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 4px' }}>Contrato de Formação Desportiva e Agenciamento</h1>
               <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '3px', color: '#888', margin: 0 }}>Celebrado entre as partes abaixo identificadas</p>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
+            <div style={{ marginBottom: '24px', pageBreakInside: 'avoid' }}>
               <h3 style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid #ddd', paddingBottom: '6px', marginBottom: '12px' }}>Identificação das Partes</h3>
               <p><strong>PRIMEIRO OUTORGANTE:</strong> AGENCY CLAN, organização de desportos eletrónicos (Esports), adiante designada por "Organização" ou "Agency Clan".</p>
               <p><strong>SEGUNDO OUTORGANTE:</strong> {pdfPlayer.name}, conhecido no meio desportivo por "{pdfPlayer.nick}", titular do NIF {pdfPlayer.nif}, residente em {pdfPlayer.address}, adiante designado por "Jogador".</p>
               <p style={{ fontStyle: 'italic', marginTop: '12px' }}>É celebrado e reduzido a escrito o presente Contrato de Formação Desportiva, que se rege pelas cláusulas seguintes:</p>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
+            <div style={{ marginBottom: '24px', pageBreakInside: 'avoid' }}>
               <h3 style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid #ddd', paddingBottom: '6px', marginBottom: '12px' }}>Cláusula 1ª (Objeto) e Cláusula 2ª (Duração)</h3>
               <p>1. O presente contrato tem por objeto a formação desportiva e agenciamento do Jogador na modalidade de Counter-Strike 2 (CS2), integrando-o na estrutura da Agency Clan.</p>
               <p>2. O contrato tem a duração de 4 (quatro) meses, com início na data de assinatura.</p>
               <p>3. A intenção de renovação ou denúncia do presente contrato deve ser comunicada por escrito por qualquer das partes com uma antecedência mínima de 15 (quinze) dias em relação ao seu termo.</p>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
+            <div style={{ marginBottom: '24px', pageBreakInside: 'avoid' }}>
               <h3 style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid #ddd', paddingBottom: '6px', marginBottom: '12px' }}>Cláusula 3ª (Benefícios e Formação)</h3>
               <p>Durante a vigência do contrato, a Organização compromete-se a fornecer ao Jogador:</p>
               <ul style={{ paddingLeft: '24px', margin: '8px 0' }}>
@@ -316,14 +317,14 @@ export default function AdminDashboard() {
               </ul>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
+            <div style={{ marginBottom: '24px', pageBreakInside: 'avoid' }}>
               <h3 style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid #ddd', paddingBottom: '6px', marginBottom: '12px' }}>Cláusula 4ª (Obrigações e Direitos de Imagem)</h3>
               <p>1. O Jogador compromete-se a manter uma atitude profissional, focar-se na sua evolução no jogo e trabalhar ativamente as suas redes sociais para construção de marca pessoal em alinhamento com a Organização.</p>
               <p>2. O Jogador compromete-se a manter total transparência e comunicação aberta com a equipa de gestão.</p>
               <p>3. Pelo presente contrato, o Jogador cede os seus direitos de imagem à Agency Clan para fins promocionais, de marketing e criação de conteúdo durante a vigência do mesmo.</p>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
+            <div style={{ marginBottom: '24px', pageBreakInside: 'avoid' }}>
               <h3 style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid #ddd', paddingBottom: '6px', marginBottom: '12px' }}>Cláusula 5ª (Distribuição de Prémios)</h3>
               <p>1. Os prémios obtidos em competições oficiais durante a vigência do contrato serão distribuídos da seguinte forma:</p>
               <ul style={{ paddingLeft: '24px', margin: '8px 0' }}>
@@ -332,7 +333,7 @@ export default function AdminDashboard() {
               </ul>
             </div>
 
-            <div style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: '32px', pageBreakInside: 'avoid' }}>
               <h3 style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid #ddd', paddingBottom: '6px', marginBottom: '12px' }}>Cláusula 6ª (Cláusula de Rescisão) e Cláusula 7ª (Foro)</h3>
               <p>1. Qualquer contacto externo referente à transferência do Jogador deve ser obrigatoriamente direcionado à Organização ou ao Manager da equipa.</p>
               <p>2. Caso o Jogador decida abandonar a Organização antes do término do contrato, fica estipulada uma cláusula de rescisão (buyout) no valor de 200€ (duzentos euros), para compensar o investimento formativo realizado.</p>
@@ -340,7 +341,7 @@ export default function AdminDashboard() {
               <p>4. Para dirimir quaisquer litígios emergentes da interpretação ou execução deste contrato, as partes estipulam como competente o foro da Comarca do Porto, com expressa renúncia a qualquer outro.</p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', borderTop: '2px solid #F5333F', paddingTop: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', borderTop: '2px solid #F5333F', paddingTop: '24px', pageBreakInside: 'avoid' }}>
               <div>
                 <p style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 'bold', color: '#888', marginBottom: '12px' }}>Assinatura do Jogador</p>
                 {pdfPlayer.playerSignature && (
