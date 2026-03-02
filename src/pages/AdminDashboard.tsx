@@ -5,6 +5,7 @@ import { format, addMonths } from 'date-fns';
 import { Shield, CheckCircle, PenTool, Printer, LogOut, X, Download } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
 import { Player } from '../../types';
+import logoSrc from '../logo.png';
 
 export default function AdminDashboard() {
   const { players, updatePlayer, logout } = useAppContext();
@@ -276,96 +277,86 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Hidden off-screen PDF container — mirrors PlayerContract exactly */}
+      {/* Hidden formal PDF for download */}
       {pdfPlayer && (
         <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
-          <div ref={pdfRef} className="p-12 rounded-3xl border border-white/5 space-y-12 relative overflow-hidden" style={{ width: '800px', background: '#333333', color: 'white', fontFamily: 'Inter, sans-serif' }}>
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-agency-red to-agency-darkRed"></div>
-
-            <div className="text-center border-b border-white/10 pb-8">
-              <h2 className="text-4xl font-bold uppercase tracking-tight mb-2">Contrato de Formação Desportiva e Agenciamento</h2>
-              <p className="text-sm uppercase tracking-widest text-white/40">Celebrado entre as partes abaixo identificadas</p>
+          <div ref={pdfRef} style={{ width: '794px', background: 'white', color: '#111', padding: '48px 56px', fontFamily: 'Inter, sans-serif', fontSize: '13px', lineHeight: '1.7' }}>
+            <div style={{ textAlign: 'center', marginBottom: '32px', borderBottom: '2px solid #F5333F', paddingBottom: '24px' }}>
+              <img src={logoSrc} alt="Agency Clan" style={{ width: '56px', height: '56px', margin: '0 auto 12px' }} />
+              <h1 style={{ fontSize: '22px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 4px' }}>Contrato de Formação Desportiva e Agenciamento</h1>
+              <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '3px', color: '#888', margin: 0 }}>Celebrado entre as partes abaixo identificadas</p>
             </div>
 
-            <div className="space-y-8 text-sm leading-relaxed text-white/80">
-              <div className="space-y-4">
-                <h3 className="font-bold uppercase tracking-widest text-agency-red mb-4 border-b border-white/10 pb-2">Identificação das Partes</h3>
-                <p><strong>PRIMEIRO OUTORGANTE:</strong> AGENCY CLAN, organização de desportos eletrónicos (Esports), adiante designada por "Organização" ou "Agency Clan".</p>
-                <p><strong>SEGUNDO OUTORGANTE:</strong> {pdfPlayer.name}, conhecido no meio desportivo por "{pdfPlayer.nick}", titular do NIF {pdfPlayer.nif}, residente em {pdfPlayer.address}, adiante designado por "Jogador".</p>
-                <p className="italic mt-6">É celebrado e reduzido a escrito o presente Contrato de Formação Desportiva, que se rege pelas cláusulas seguintes:</p>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-bold uppercase tracking-widest text-agency-red mb-4 border-b border-white/10 pb-2">Cláusula 1ª (Objeto) e Cláusula 2ª (Duração)</h3>
-                <p>1. O presente contrato tem por objeto a formação desportiva e agenciamento do Jogador na modalidade de Counter-Strike 2 (CS2), integrando-o na estrutura da Agency Clan.</p>
-                <p>2. O contrato tem a duração de 4 (quatro) meses, com início a 02 de março de 2026 e término a 02 de julho de 2026.</p>
-                <p>3. A intenção de renovação ou denúncia do presente contrato deve ser comunicada por escrito por qualquer das partes com uma antecedência mínima de 15 (quinze) dias em relação ao seu termo.</p>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-bold uppercase tracking-widest text-agency-red mb-4 border-b border-white/10 pb-2">Cláusula 3ª (Benefícios e Formação)</h3>
-                <p>Durante a vigência do contrato, a Organização compromete-se a fornecer ao Jogador:</p>
-                <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>Subscrição ESEA e Pracc.</li>
-                  <li>Acesso a servidores de Discord e TeamSpeak.</li>
-                  <li>Acompanhamento dedicado por 1 Manager e 1 Coach, com suporte de toda a estrutura.</li>
-                </ul>
-                <p className="mt-4">Após 1 (um) mês de estabilidade e cumprimento de objetivos:</p>
-                <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>O Jogador poderá escolher um benefício extra: Refrag, Leetify, Warmup Server ou Faceit Premium.</li>
-                  <li>Acesso a Masterclasses e ferramentas de Inteligência Artificial para desenvolvimento contínuo.</li>
-                </ul>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-bold uppercase tracking-widest text-agency-red mb-4 border-b border-white/10 pb-2">Cláusula 4ª (Obrigações e Direitos de Imagem)</h3>
-                <p>1. O Jogador compromete-se a manter uma atitude profissional, focar-se na sua evolução no jogo e trabalhar ativamente as suas redes sociais para construção de marca pessoal em alinhamento com a Organização.</p>
-                <p>2. O Jogador compromete-se a manter total transparência e comunicação aberta com a equipa de gestão.</p>
-                <p>3. Pelo presente contrato, o Jogador cede os seus direitos de imagem à Agency Clan para fins promocionais, de marketing e criação de conteúdo durante a vigência do mesmo.</p>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-bold uppercase tracking-widest text-agency-red mb-4 border-b border-white/10 pb-2">Cláusula 5ª (Distribuição de Prémios)</h3>
-                <p>1. Os prémios obtidos em competições oficiais durante a vigência do contrato serão distribuídos da seguinte forma:</p>
-                <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li><strong>Eventos LAN:</strong> 40% para a Organização (TAC) — 60% para os Jogadores.</li>
-                  <li><strong>Eventos Online:</strong> 30% para a Organização (TAC) — 70% para os Jogadores.</li>
-                </ul>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-bold uppercase tracking-widest text-agency-red mb-4 border-b border-white/10 pb-2">Cláusula 6ª (Cláusula de Rescisão) e Cláusula 7ª (Foro)</h3>
-                <p>1. Qualquer contacto externo referente à transferência do Jogador deve ser obrigatoriamente direcionado à Organização ou ao Manager da equipa.</p>
-                <p>2. Caso o Jogador decida abandonar a Organização antes do término do contrato, fica estipulada uma cláusula de rescisão (buyout) no valor de 200€ (duzentos euros), para compensar o investimento formativo realizado.</p>
-                <p>3. Bónus de Renovação: Em caso de renovação bem-sucedida após os 4 meses iniciais, o Jogador será recompensado com a Jersey Oficial da Agency Clan.</p>
-                <p>4. Para dirimir quaisquer litígios emergentes da interpretação ou execução deste contrato, as partes estipulam como competente o foro da Comarca do Porto, com expressa renúncia a qualquer outro.</p>
-              </div>
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid #ddd', paddingBottom: '6px', marginBottom: '12px' }}>Identificação das Partes</h3>
+              <p><strong>PRIMEIRO OUTORGANTE:</strong> AGENCY CLAN, organização de desportos eletrónicos (Esports), adiante designada por "Organização" ou "Agency Clan".</p>
+              <p><strong>SEGUNDO OUTORGANTE:</strong> {pdfPlayer.name}, conhecido no meio desportivo por "{pdfPlayer.nick}", titular do NIF {pdfPlayer.nif}, residente em {pdfPlayer.address}, adiante designado por "Jogador".</p>
+              <p style={{ fontStyle: 'italic', marginTop: '12px' }}>É celebrado e reduzido a escrito o presente Contrato de Formação Desportiva, que se rege pelas cláusulas seguintes:</p>
             </div>
 
-            <div className="text-center py-6 mt-8 border-t border-white/10">
-              <p className="text-xs uppercase tracking-widest font-bold text-white/60 italic">DIGITAL SIGNATURE — future Major sticker material. choose wisely.</p>
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid #ddd', paddingBottom: '6px', marginBottom: '12px' }}>Cláusula 1ª (Objeto) e Cláusula 2ª (Duração)</h3>
+              <p>1. O presente contrato tem por objeto a formação desportiva e agenciamento do Jogador na modalidade de Counter-Strike 2 (CS2), integrando-o na estrutura da Agency Clan.</p>
+              <p>2. O contrato tem a duração de 4 (quatro) meses, com início na data de assinatura.</p>
+              <p>3. A intenção de renovação ou denúncia do presente contrato deve ser comunicada por escrito por qualquer das partes com uma antecedência mínima de 15 (quinze) dias em relação ao seu termo.</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-12 pt-12 mt-12 border-t border-white/10">
-              <div className="space-y-4">
-                <p className="text-xs uppercase tracking-widest font-bold text-white/40">Player Signature</p>
-                {pdfPlayer.playerSignature ? (
-                  <img src={pdfPlayer.playerSignature} alt="Player Signature" className="h-24 object-contain bg-white/5 rounded-lg border border-white/10 p-2 w-full" />
-                ) : (
-                  <div className="h-24 border-b border-white/20 w-full"></div>
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid #ddd', paddingBottom: '6px', marginBottom: '12px' }}>Cláusula 3ª (Benefícios e Formação)</h3>
+              <p>Durante a vigência do contrato, a Organização compromete-se a fornecer ao Jogador:</p>
+              <ul style={{ paddingLeft: '24px', margin: '8px 0' }}>
+                <li>Subscrição ESEA e Pracc.</li>
+                <li>Acesso a servidores de Discord e TeamSpeak.</li>
+                <li>Acompanhamento dedicado por 1 Manager e 1 Coach, com suporte de toda a estrutura.</li>
+              </ul>
+              <p style={{ marginTop: '12px' }}>Após 1 (um) mês de estabilidade e cumprimento de objetivos:</p>
+              <ul style={{ paddingLeft: '24px', margin: '8px 0' }}>
+                <li>O Jogador poderá escolher um benefício extra: Refrag, Leetify, Warmup Server ou Faceit Premium.</li>
+                <li>Acesso a Masterclasses e ferramentas de Inteligência Artificial para desenvolvimento contínuo.</li>
+              </ul>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid #ddd', paddingBottom: '6px', marginBottom: '12px' }}>Cláusula 4ª (Obrigações e Direitos de Imagem)</h3>
+              <p>1. O Jogador compromete-se a manter uma atitude profissional, focar-se na sua evolução no jogo e trabalhar ativamente as suas redes sociais para construção de marca pessoal em alinhamento com a Organização.</p>
+              <p>2. O Jogador compromete-se a manter total transparência e comunicação aberta com a equipa de gestão.</p>
+              <p>3. Pelo presente contrato, o Jogador cede os seus direitos de imagem à Agency Clan para fins promocionais, de marketing e criação de conteúdo durante a vigência do mesmo.</p>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid #ddd', paddingBottom: '6px', marginBottom: '12px' }}>Cláusula 5ª (Distribuição de Prémios)</h3>
+              <p>1. Os prémios obtidos em competições oficiais durante a vigência do contrato serão distribuídos da seguinte forma:</p>
+              <ul style={{ paddingLeft: '24px', margin: '8px 0' }}>
+                <li><strong>Eventos LAN:</strong> 40% para a Organização (TAC) — 60% para os Jogadores.</li>
+                <li><strong>Eventos Online:</strong> 30% para a Organização (TAC) — 70% para os Jogadores.</li>
+              </ul>
+            </div>
+
+            <div style={{ marginBottom: '32px' }}>
+              <h3 style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', borderBottom: '1px solid #ddd', paddingBottom: '6px', marginBottom: '12px' }}>Cláusula 6ª (Cláusula de Rescisão) e Cláusula 7ª (Foro)</h3>
+              <p>1. Qualquer contacto externo referente à transferência do Jogador deve ser obrigatoriamente direcionado à Organização ou ao Manager da equipa.</p>
+              <p>2. Caso o Jogador decida abandonar a Organização antes do término do contrato, fica estipulada uma cláusula de rescisão (buyout) no valor de 200€ (duzentos euros), para compensar o investimento formativo realizado.</p>
+              <p>3. Bónus de Renovação: Em caso de renovação bem-sucedida após os 4 meses iniciais, o Jogador será recompensado com a Jersey Oficial da Agency Clan.</p>
+              <p>4. Para dirimir quaisquer litígios emergentes da interpretação ou execução deste contrato, as partes estipulam como competente o foro da Comarca do Porto, com expressa renúncia a qualquer outro.</p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', borderTop: '2px solid #F5333F', paddingTop: '24px' }}>
+              <div>
+                <p style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 'bold', color: '#888', marginBottom: '12px' }}>Assinatura do Jogador</p>
+                {pdfPlayer.playerSignature && (
+                  <img src={pdfPlayer.playerSignature} alt="Player Signature" style={{ height: '80px', objectFit: 'contain', width: '100%', borderBottom: '1px solid #ccc' }} />
                 )}
-                <p className="text-xs text-white/40 font-mono">Signed on: {pdfPlayer.signedAt ? format(new Date(pdfPlayer.signedAt), 'dd MMM yyyy HH:mm') : 'N/A'}</p>
+                <p style={{ fontSize: '11px', color: '#888', marginTop: '8px' }}>Assinado em: {pdfPlayer.signedAt ? format(new Date(pdfPlayer.signedAt), 'dd/MM/yyyy HH:mm') : 'N/A'}</p>
               </div>
-
-              <div className="space-y-4">
-                <p className="text-xs uppercase tracking-widest font-bold text-white/40">Admin Signature</p>
+              <div>
+                <p style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 'bold', color: '#888', marginBottom: '12px' }}>Assinatura da Organização</p>
                 {pdfPlayer.adminSignature ? (
                   <>
-                    <img src={pdfPlayer.adminSignature} alt="Admin Signature" className="h-24 object-contain bg-white/5 rounded-lg border border-white/10 p-2 w-full" />
-                    <p className="text-xs text-white/40 font-mono">Countersigned</p>
+                    <img src={pdfPlayer.adminSignature} alt="Admin Signature" style={{ height: '80px', objectFit: 'contain', width: '100%', borderBottom: '1px solid #ccc' }} />
+                    <p style={{ fontSize: '11px', color: '#888', marginTop: '8px' }}>Contra-assinado</p>
                   </>
                 ) : (
-                  <div className="h-24 border-b border-white/20 w-full"></div>
+                  <div style={{ height: '80px', borderBottom: '1px solid #ccc' }}></div>
                 )}
               </div>
             </div>
