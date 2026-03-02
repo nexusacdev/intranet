@@ -1,4 +1,4 @@
-const { GoogleAuth } = require('google-auth-library');
+import { GoogleAuth } from 'google-auth-library';
 
 const SPREADSHEET_ID = '1L23eKp1xQYV1Mv_vG0Y3WqFn5mNoQXsW8xWM9zERvSI';
 const SHEET_NAME = 'Players';
@@ -56,7 +56,7 @@ function rowToPlayer(headers, row) {
   return player;
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -89,7 +89,6 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ success: false, error: 'Missing playerId or updates' });
       }
 
-      // Find the row
       const data = await sheetsGet(token, `${SHEET_NAME}!A:K`);
       const rows = data.values || [];
       const headers = rows[0];
@@ -107,7 +106,6 @@ module.exports = async function handler(req, res) {
         return res.status(404).json({ success: false, error: 'Player not found: ' + playerId });
       }
 
-      // Update each field
       for (const [key, value] of Object.entries(updates)) {
         const colIndex = headers.indexOf(key);
         if (colIndex === -1) continue;
@@ -124,4 +122,4 @@ module.exports = async function handler(req, res) {
     console.error('API error:', error);
     return res.status(500).json({ success: false, error: error.message });
   }
-};
+}
