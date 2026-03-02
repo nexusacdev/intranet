@@ -1,95 +1,62 @@
-const { google } = require('googleapis');
+const { GoogleAuth } = require('google-auth-library');
 
 const SPREADSHEET_ID = '1L23eKp1xQYV1Mv_vG0Y3WqFn5mNoQXsW8xWM9zERvSI';
 const SHEET_NAME = 'Players';
-const HEADERS = ['id', 'name', 'nick', 'role', 'status', 'team', 'nif', 'address', 'playerSignature', 'adminSignature', 'signedAt'];
+const SHEETS_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
 
-function getAuth() {
+async function getAccessToken() {
   const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
-  return new google.auth.GoogleAuth({
+  const auth = new GoogleAuth({
     credentials,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
+  const client = await auth.getClient();
+  const token = await client.getAccessToken();
+  return token.token;
 }
 
-async function getPlayers(sheets) {
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A:K`,
+async function sheetsGet(token, range) {
+  const url = `${SHEETS_BASE}/${SPREADSHEET_ID}/values/${encodeURIComponent(range)}`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
   });
-
-  const rows = res.data.values || [];
-  if (rows.length <= 1) return [];
-
-  const headers = rows[0];
-  return rows.slice(1).map(row => {
-    const player = {};
-    headers.forEach((key, j) => {
-      const value = row[j] || '';
-      if (value === '' && ['nif', 'address', 'playerSignature', 'adminSignature', 'signedAt'].includes(key)) {
-        return; // skip empty optional fields
-      }
-      if (key === 'signedAt' && value !== '') {
-        player[key] = Number(value);
-      } else {
-        player[key] = value;
-      }
-    });
-    return player;
-  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Sheets API GET failed (${res.status}): ${text}`);
+  }
+  return res.json();
 }
 
-async function updatePlayer(sheets, playerId, updates) {
-  // Read current data to find the row
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A:K`,
+async function sheetsPut(token, range, values) {
+  const url = `${SHEETS_BASE}/${SPREADSHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=RAW`;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ values }),
   });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Sheets API PUT failed (${res.status}): ${text}`);
+  }
+  return res.json();
+}
 
-  const rows = res.data.values || [];
-  const headers = rows[0];
-  const idCol = headers.indexOf('id');
-
-  let rowIndex = -1;
-  for (let i = 1; i < rows.length; i++) {
-    if (rows[i][idCol] === playerId) {
-      rowIndex = i + 1; // 1-indexed for Sheets API
-      break;
+function rowToPlayer(headers, row) {
+  const player = {};
+  headers.forEach((key, j) => {
+    const value = row[j] || '';
+    if (value === '' && ['nif', 'address', 'playerSignature', 'adminSignature', 'signedAt'].includes(key)) {
+      return;
     }
-  }
-
-  if (rowIndex === -1) {
-    throw new Error('Player not found: ' + playerId);
-  }
-
-  // Update specific cells
-  const requests = [];
-  for (const [key, value] of Object.entries(updates)) {
-    const colIndex = headers.indexOf(key);
-    if (colIndex === -1) continue;
-
-    // Convert column index to letter (A, B, C, ...)
-    const colLetter = String.fromCharCode(65 + colIndex);
-    const range = `${SHEET_NAME}!${colLetter}${rowIndex}`;
-
-    requests.push(
-      sheets.spreadsheets.values.update({
-        spreadsheetId: SPREADSHEET_ID,
-        range,
-        valueInputOption: 'RAW',
-        requestBody: {
-          values: [[value !== undefined && value !== null ? value : '']],
-        },
-      })
-    );
-  }
-
-  await Promise.all(requests);
-  return { success: true };
+    player[key] = key === 'signedAt' && value !== '' ? Number(value) : value;
+  });
+  return player;
 }
 
 module.exports = async function handler(req, res) {
-  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -100,20 +67,19 @@ module.exports = async function handler(req, res) {
 
   try {
     if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
-      return res.status(500).json({ success: false, error: 'GOOGLE_SERVICE_ACCOUNT_KEY env var is missing' });
+      return res.status(500).json({ success: false, error: 'GOOGLE_SERVICE_ACCOUNT_KEY not set' });
     }
 
-    let auth;
-    try {
-      auth = getAuth();
-    } catch (e) {
-      return res.status(500).json({ success: false, error: 'Failed to parse service account key: ' + e.message });
-    }
-
-    const sheets = google.sheets({ version: 'v4', auth });
+    const token = await getAccessToken();
 
     if (req.method === 'GET') {
-      const players = await getPlayers(sheets);
+      const data = await sheetsGet(token, `${SHEET_NAME}!A:K`);
+      const rows = data.values || [];
+      if (rows.length <= 1) {
+        return res.status(200).json({ success: true, data: [] });
+      }
+      const headers = rows[0];
+      const players = rows.slice(1).map(row => rowToPlayer(headers, row));
       return res.status(200).json({ success: true, data: players });
     }
 
@@ -122,7 +88,34 @@ module.exports = async function handler(req, res) {
       if (!playerId || !updates) {
         return res.status(400).json({ success: false, error: 'Missing playerId or updates' });
       }
-      await updatePlayer(sheets, playerId, updates);
+
+      // Find the row
+      const data = await sheetsGet(token, `${SHEET_NAME}!A:K`);
+      const rows = data.values || [];
+      const headers = rows[0];
+      const idCol = headers.indexOf('id');
+
+      let rowIndex = -1;
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i][idCol] === playerId) {
+          rowIndex = i + 1;
+          break;
+        }
+      }
+
+      if (rowIndex === -1) {
+        return res.status(404).json({ success: false, error: 'Player not found: ' + playerId });
+      }
+
+      // Update each field
+      for (const [key, value] of Object.entries(updates)) {
+        const colIndex = headers.indexOf(key);
+        if (colIndex === -1) continue;
+        const colLetter = String.fromCharCode(65 + colIndex);
+        const range = `${SHEET_NAME}!${colLetter}${rowIndex}`;
+        await sheetsPut(token, range, [[value != null ? value : '']]);
+      }
+
       return res.status(200).json({ success: true });
     }
 
