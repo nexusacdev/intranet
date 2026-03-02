@@ -15,8 +15,10 @@
 // 9. Click Deploy and copy the URL
 // ============================================================
 
+var SHEET_ID = '1L23eKp1xQYV1Mv_vG0Y3WqFn5mNoQXsW8xWM9zERvSI';
+
 function getSheet() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById(SHEET_ID);
   var sheet = ss.getSheetByName('Players');
   if (!sheet) {
     sheet = ss.getSheets()[0];
