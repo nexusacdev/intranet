@@ -33,24 +33,23 @@ export default function AdminDashboard() {
   const contractRef = useRef<HTMLDivElement>(null);
 
   const handleDownloadPDF = async (player: Player) => {
+    // Open modal so React renders the contract content
     setSelectedPlayer(player);
-    // Wait for modal to render
     await new Promise(r => setTimeout(r, 500));
-    const element = contractRef.current;
-    if (!element) return;
 
-    // Temporarily remove scroll/overflow constraints so html2canvas captures everything
-    const overlay = element.parentElement;
-    const prevMaxH = element.style.maxHeight;
-    const prevOverflow = element.style.overflow;
-    const prevOverlayPos = overlay?.style.position || '';
-    const prevOverlayOverflow = overlay?.style.overflow || '';
-    element.style.maxHeight = 'none';
-    element.style.overflow = 'visible';
-    if (overlay) {
-      overlay.style.position = 'absolute';
-      overlay.style.overflow = 'visible';
-    }
+    const source = contractRef.current;
+    if (!source) return;
+
+    // Clone content into an off-screen container to avoid
+    // fixed-positioning and overflow issues with html2canvas
+    const container = document.createElement('div');
+    container.style.cssText = 'position:absolute; left:-9999px; top:0; width:800px; background:white; color:black; padding:48px;';
+    container.innerHTML = source.innerHTML;
+
+    // Remove UI-only elements (close button etc.) from the clone
+    container.querySelectorAll('.no-print').forEach(el => el.remove());
+
+    document.body.appendChild(container);
 
     try {
       const html2pdf = (await import('html2pdf.js')).default;
@@ -59,18 +58,14 @@ export default function AdminDashboard() {
           margin: 10,
           filename: `contract-${player.nick}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, allowTaint: true, scrollY: -window.scrollY },
+          html2canvas: { scale: 2, useCORS: true, allowTaint: true },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         })
-        .from(element)
+        .from(container)
         .save();
     } finally {
-      element.style.maxHeight = prevMaxH;
-      element.style.overflow = prevOverflow;
-      if (overlay) {
-        overlay.style.position = prevOverlayPos;
-        overlay.style.overflow = prevOverlayOverflow;
-      }
+      document.body.removeChild(container);
+      setSelectedPlayer(null);
     }
   };
 

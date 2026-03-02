@@ -33,8 +33,8 @@ const Hero = () => (
         O recrutamento para os futuros talentos do Dojo começou.
       </p>
       <div className="flex flex-col md:flex-row items-center justify-center gap-6 pt-8">
-        <a href="#budget" className="px-10 py-4 bg-white text-black font-semibold rounded-full hover:bg-agency-red hover:text-white transition-all duration-300 transform hover:scale-105 active:scale-95">
-          View Scholarship
+        <a href="#teams" className="px-10 py-4 bg-white text-black font-semibold rounded-full hover:bg-agency-red hover:text-white transition-all duration-300 transform hover:scale-105 active:scale-95">
+          Young Ninjas
         </a>
         <a href="#sign" className="px-10 py-4 border border-white/20 text-white font-semibold rounded-full hover:bg-white/10 transition-all duration-300">
           Sign Contract
