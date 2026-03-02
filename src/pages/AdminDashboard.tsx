@@ -31,25 +31,15 @@ export default function AdminDashboard() {
   };
 
   const contractRef = useRef<HTMLDivElement>(null);
+  const pdfRef = useRef<HTMLDivElement>(null);
+  const [pdfPlayer, setPdfPlayer] = useState<Player | null>(null);
 
   const handleDownloadPDF = async (player: Player) => {
-    // Open modal so React renders the contract content
-    setSelectedPlayer(player);
+    setPdfPlayer(player);
     await new Promise(r => setTimeout(r, 500));
 
-    const source = contractRef.current;
-    if (!source) return;
-
-    // Clone content into an off-screen container to avoid
-    // fixed-positioning and overflow issues with html2canvas
-    const container = document.createElement('div');
-    container.style.cssText = 'position:absolute; left:-9999px; top:0; width:800px; background:white; color:black; padding:48px;';
-    container.innerHTML = source.innerHTML;
-
-    // Remove UI-only elements (close button etc.) from the clone
-    container.querySelectorAll('.no-print').forEach(el => el.remove());
-
-    document.body.appendChild(container);
+    const element = pdfRef.current;
+    if (!element) return;
 
     try {
       const html2pdf = (await import('html2pdf.js')).default;
@@ -58,14 +48,13 @@ export default function AdminDashboard() {
           margin: 10,
           filename: `contract-${player.nick}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, allowTaint: true },
+          html2canvas: { scale: 2, useCORS: true, allowTaint: true, scrollY: -window.scrollY },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         })
-        .from(container)
+        .from(element)
         .save();
     } finally {
-      document.body.removeChild(container);
-      setSelectedPlayer(null);
+      setPdfPlayer(null);
     }
   };
 
@@ -166,41 +155,41 @@ export default function AdminDashboard() {
         </table>
       </div>
 
-      {/* Countersign Modal / Print View */}
-      {selectedPlayer && (
-        <div className={`fixed inset-0 z-50 flex items-center justify-center p-8 ${selectedPlayer.status === 'fully_signed' ? 'bg-white text-black print-only-modal' : 'bg-black/80 backdrop-blur-sm'}`}>
-          <div ref={contractRef} className={`w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl ${selectedPlayer.status === 'fully_signed' ? 'bg-white' : 'bg-agency-darkGray border border-white/10'} p-12 relative`}>
+      {/* Countersign Modal */}
+      {selectedPlayer && selectedPlayer.status !== 'fully_signed' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-sm">
+          <div ref={contractRef} className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl bg-agency-darkGray border border-white/10 p-12 relative">
 
-            <button 
+            <button
               onClick={() => setSelectedPlayer(null)}
-              className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 transition-colors no-print"
+              className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 transition-colors"
             >
-              <X size={24} className={selectedPlayer.status === 'fully_signed' ? 'text-black' : 'text-white'} />
+              <X size={24} className="text-white" />
             </button>
 
             <div className="space-y-8">
-              <div className="text-center border-b border-black/10 pb-8">
+              <div className="text-center border-b border-white/10 pb-8">
                 <h2 className="text-3xl font-bold uppercase tracking-tight mb-2">Contrato de Formação Desportiva e Agenciamento</h2>
                 <p className="text-sm uppercase tracking-widest opacity-60">Celebrado entre as partes abaixo identificadas</p>
               </div>
 
               <div className="space-y-8 text-sm leading-relaxed opacity-80">
                 <div className="space-y-4">
-                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-black/10 pb-2">Identificação das Partes</h3>
+                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-white/10 pb-2">Identificação das Partes</h3>
                   <p><strong>PRIMEIRO OUTORGANTE:</strong> AGENCY CLAN, organização de desportos eletrónicos (Esports), adiante designada por "Organização" ou "Agency Clan".</p>
                   <p><strong>SEGUNDO OUTORGANTE:</strong> {selectedPlayer.name}, conhecido no meio desportivo por "{selectedPlayer.nick}", titular do NIF {selectedPlayer.nif}, residente em {selectedPlayer.address}, adiante designado por "Jogador".</p>
                   <p className="italic mt-6">É celebrado e reduzido a escrito o presente Contrato de Formação Desportiva, que se rege pelas cláusulas seguintes:</p>
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-black/10 pb-2">Cláusula 1ª (Objeto) e Cláusula 2ª (Duração)</h3>
+                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-white/10 pb-2">Cláusula 1ª (Objeto) e Cláusula 2ª (Duração)</h3>
                   <p>1. O presente contrato tem por objeto a formação desportiva e agenciamento do Jogador na modalidade de Counter-Strike 2 (CS2), integrando-o na estrutura da Agency Clan.</p>
                   <p>2. O contrato tem a duração de 4 (quatro) meses, com início a 02 de março de 2026 e término a 02 de julho de 2026.</p>
                   <p>3. A intenção de renovação ou denúncia do presente contrato deve ser comunicada por escrito por qualquer das partes com uma antecedência mínima de 15 (quinze) dias em relação ao seu termo.</p>
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-black/10 pb-2">Cláusula 3ª (Benefícios e Formação)</h3>
+                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-white/10 pb-2">Cláusula 3ª (Benefícios e Formação)</h3>
                   <p>Durante a vigência do contrato, a Organização compromete-se a fornecer ao Jogador:</p>
                   <ul className="list-disc list-inside space-y-1 ml-4">
                     <li>Subscrição ESEA e Pracc.</li>
@@ -215,14 +204,14 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-black/10 pb-2">Cláusula 4ª (Obrigações e Direitos de Imagem)</h3>
+                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-white/10 pb-2">Cláusula 4ª (Obrigações e Direitos de Imagem)</h3>
                   <p>1. O Jogador compromete-se a manter uma atitude profissional, focar-se na sua evolução no jogo e trabalhar ativamente as suas redes sociais para construção de marca pessoal em alinhamento com a Organização.</p>
                   <p>2. O Jogador compromete-se a manter total transparência e comunicação aberta com a equipa de gestão.</p>
                   <p>3. Pelo presente contrato, o Jogador cede os seus direitos de imagem à Agency Clan para fins promocionais, de marketing e criação de conteúdo durante a vigência do mesmo.</p>
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-black/10 pb-2">Cláusula 5ª (Distribuição de Prémios)</h3>
+                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-white/10 pb-2">Cláusula 5ª (Distribuição de Prémios)</h3>
                   <p>1. Os prémios obtidos em competições oficiais durante a vigência do contrato serão distribuídos da seguinte forma:</p>
                   <ul className="list-disc list-inside space-y-1 ml-4">
                     <li><strong>Eventos LAN:</strong> 40% para a Organização (TAC) — 60% para os Jogadores.</li>
@@ -231,7 +220,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-black/10 pb-2">Cláusula 6ª (Cláusula de Rescisão) e Cláusula 7ª (Foro)</h3>
+                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-white/10 pb-2">Cláusula 6ª (Cláusula de Rescisão) e Cláusula 7ª (Foro)</h3>
                   <p>1. Qualquer contacto externo referente à transferência do Jogador deve ser obrigatoriamente direcionado à Organização ou ao Manager da equipa.</p>
                   <p>2. Caso o Jogador decida abandonar a Organização antes do término do contrato, fica estipulada uma cláusula de rescisão (buyout) no valor de 200€ (duzentos euros), para compensar o investimento formativo realizado.</p>
                   <p>3. Bónus de Renovação: Em caso de renovação bem-sucedida após os 4 meses iniciais, o Jogador será recompensado com a Jersey Oficial da Agency Clan.</p>
@@ -239,56 +228,146 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="text-center py-6 mt-8 border-t border-black/10">
+              <div className="text-center py-6 mt-8 border-t border-white/10">
                 <p className="text-xs uppercase tracking-widest font-bold opacity-60 italic">DIGITAL SIGNATURE — future Major sticker material. choose wisely.</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-12 pt-12 mt-4 border-t border-black/10">
+              <div className="grid grid-cols-2 gap-12 pt-12 mt-4 border-t border-white/10">
                 <div className="space-y-4">
                   <p className="text-xs uppercase tracking-widest font-bold opacity-60">Player Signature</p>
                   {selectedPlayer.playerSignature ? (
-                    <img src={selectedPlayer.playerSignature} alt="Player Signature" className="h-24 object-contain border-b border-black/20 w-full" />
+                    <img src={selectedPlayer.playerSignature} alt="Player Signature" className="h-24 object-contain border-b border-white/20 w-full" />
                   ) : (
-                    <div className="h-24 border-b border-black/20 w-full"></div>
+                    <div className="h-24 border-b border-white/20 w-full"></div>
                   )}
                   <p className="text-xs opacity-60">Signed on: {selectedPlayer.signedAt ? format(new Date(selectedPlayer.signedAt), 'dd MMM yyyy') : 'N/A'}</p>
                 </div>
 
                 <div className="space-y-4">
                   <p className="text-xs uppercase tracking-widest font-bold opacity-60">Admin Signature</p>
-                  {selectedPlayer.status === 'fully_signed' ? (
-                    <>
-                      <img src={selectedPlayer.adminSignature} alt="Admin Signature" className="h-24 object-contain border-b border-black/20 w-full" />
-                      <p className="text-xs opacity-60">Countersigned</p>
-                    </>
-                  ) : (
-                    <div className="space-y-4 no-print">
-                      <div className="bg-white rounded-xl overflow-hidden border-2 border-dashed border-white/20">
-                        <SignatureCanvas 
-                          ref={sigCanvas}
-                          penColor="black"
-                          canvasProps={{ className: 'w-full h-32 cursor-crosshair' }}
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={() => sigCanvas.current?.clear()}
-                          className="px-4 py-2 rounded-lg border border-white/10 text-sm hover:bg-white/5 transition-colors"
-                        >
-                          Clear
-                        </button>
-                        <button 
-                          onClick={handleCountersign}
-                          className="flex-1 px-4 py-2 rounded-lg bg-agency-red text-white font-bold text-sm hover:bg-agency-darkRed transition-colors"
-                        >
-                          Approve & Sign
-                        </button>
-                      </div>
+                  <div className="space-y-4">
+                    <div className="bg-white rounded-xl overflow-hidden border-2 border-dashed border-white/20">
+                      <SignatureCanvas
+                        ref={sigCanvas}
+                        penColor="black"
+                        canvasProps={{ className: 'w-full h-32 cursor-crosshair' }}
+                      />
                     </div>
-                  )}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => sigCanvas.current?.clear()}
+                        className="px-4 py-2 rounded-lg border border-white/10 text-sm hover:bg-white/5 transition-colors"
+                      >
+                        Clear
+                      </button>
+                      <button
+                        onClick={handleCountersign}
+                        className="flex-1 px-4 py-2 rounded-lg bg-agency-red text-white font-bold text-sm hover:bg-agency-darkRed transition-colors"
+                      >
+                        Approve & Sign
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden off-screen PDF container — same approach as PlayerContract */}
+      {pdfPlayer && (
+        <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+          <div ref={pdfRef} style={{ width: '800px', background: '#333333', color: 'white', padding: '48px', fontFamily: 'Inter, sans-serif' }}>
+            <div className="space-y-8">
+              <div className="text-center border-b border-white/10 pb-8">
+                <h2 className="text-3xl font-bold uppercase tracking-tight mb-2">Contrato de Formação Desportiva e Agenciamento</h2>
+                <p className="text-sm uppercase tracking-widest opacity-60">Celebrado entre as partes abaixo identificadas</p>
+              </div>
+
+              <div className="space-y-8 text-sm leading-relaxed opacity-80">
+                <div className="space-y-4">
+                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-white/10 pb-2">Identificação das Partes</h3>
+                  <p><strong>PRIMEIRO OUTORGANTE:</strong> AGENCY CLAN, organização de desportos eletrónicos (Esports), adiante designada por "Organização" ou "Agency Clan".</p>
+                  <p><strong>SEGUNDO OUTORGANTE:</strong> {pdfPlayer.name}, conhecido no meio desportivo por "{pdfPlayer.nick}", titular do NIF {pdfPlayer.nif}, residente em {pdfPlayer.address}, adiante designado por "Jogador".</p>
+                  <p className="italic mt-6">É celebrado e reduzido a escrito o presente Contrato de Formação Desportiva, que se rege pelas cláusulas seguintes:</p>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-white/10 pb-2">Cláusula 1ª (Objeto) e Cláusula 2ª (Duração)</h3>
+                  <p>1. O presente contrato tem por objeto a formação desportiva e agenciamento do Jogador na modalidade de Counter-Strike 2 (CS2), integrando-o na estrutura da Agency Clan.</p>
+                  <p>2. O contrato tem a duração de 4 (quatro) meses, com início a 02 de março de 2026 e término a 02 de julho de 2026.</p>
+                  <p>3. A intenção de renovação ou denúncia do presente contrato deve ser comunicada por escrito por qualquer das partes com uma antecedência mínima de 15 (quinze) dias em relação ao seu termo.</p>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-white/10 pb-2">Cláusula 3ª (Benefícios e Formação)</h3>
+                  <p>Durante a vigência do contrato, a Organização compromete-se a fornecer ao Jogador:</p>
+                  <ul className="list-disc list-inside space-y-1 ml-4">
+                    <li>Subscrição ESEA e Pracc.</li>
+                    <li>Acesso a servidores de Discord e TeamSpeak.</li>
+                    <li>Acompanhamento dedicado por 1 Manager e 1 Coach, com suporte de toda a estrutura.</li>
+                  </ul>
+                  <p className="mt-4">Após 1 (um) mês de estabilidade e cumprimento de objetivos:</p>
+                  <ul className="list-disc list-inside space-y-1 ml-4">
+                    <li>O Jogador poderá escolher um benefício extra: Refrag, Leetify, Warmup Server ou Faceit Premium.</li>
+                    <li>Acesso a Masterclasses e ferramentas de Inteligência Artificial para desenvolvimento contínuo.</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-white/10 pb-2">Cláusula 4ª (Obrigações e Direitos de Imagem)</h3>
+                  <p>1. O Jogador compromete-se a manter uma atitude profissional, focar-se na sua evolução no jogo e trabalhar ativamente as suas redes sociais para construção de marca pessoal em alinhamento com a Organização.</p>
+                  <p>2. O Jogador compromete-se a manter total transparência e comunicação aberta com a equipa de gestão.</p>
+                  <p>3. Pelo presente contrato, o Jogador cede os seus direitos de imagem à Agency Clan para fins promocionais, de marketing e criação de conteúdo durante a vigência do mesmo.</p>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-white/10 pb-2">Cláusula 5ª (Distribuição de Prémios)</h3>
+                  <p>1. Os prémios obtidos em competições oficiais durante a vigência do contrato serão distribuídos da seguinte forma:</p>
+                  <ul className="list-disc list-inside space-y-1 ml-4">
+                    <li><strong>Eventos LAN:</strong> 40% para a Organização (TAC) — 60% para os Jogadores.</li>
+                    <li><strong>Eventos Online:</strong> 30% para a Organização (TAC) — 70% para os Jogadores.</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-white/10 pb-2">Cláusula 6ª (Cláusula de Rescisão) e Cláusula 7ª (Foro)</h3>
+                  <p>1. Qualquer contacto externo referente à transferência do Jogador deve ser obrigatoriamente direcionado à Organização ou ao Manager da equipa.</p>
+                  <p>2. Caso o Jogador decida abandonar a Organização antes do término do contrato, fica estipulada uma cláusula de rescisão (buyout) no valor de 200€ (duzentos euros), para compensar o investimento formativo realizado.</p>
+                  <p>3. Bónus de Renovação: Em caso de renovação bem-sucedida após os 4 meses iniciais, o Jogador será recompensado com a Jersey Oficial da Agency Clan.</p>
+                  <p>4. Para dirimir quaisquer litígios emergentes da interpretação ou execução deste contrato, as partes estipulam como competente o foro da Comarca do Porto, com expressa renúncia a qualquer outro.</p>
+                </div>
+              </div>
+
+              <div className="text-center py-6 mt-8 border-t border-white/10">
+                <p className="text-xs uppercase tracking-widest font-bold opacity-60 italic">DIGITAL SIGNATURE — future Major sticker material. choose wisely.</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-12 pt-12 mt-4 border-t border-white/10">
+                <div className="space-y-4">
+                  <p className="text-xs uppercase tracking-widest font-bold opacity-60">Player Signature</p>
+                  {pdfPlayer.playerSignature ? (
+                    <img src={pdfPlayer.playerSignature} alt="Player Signature" className="h-24 object-contain bg-white/5 rounded-lg border border-white/10 p-2 w-full" />
+                  ) : (
+                    <div className="h-24 border-b border-white/20 w-full"></div>
+                  )}
+                  <p className="text-xs opacity-60">Signed on: {pdfPlayer.signedAt ? format(new Date(pdfPlayer.signedAt), 'dd MMM yyyy') : 'N/A'}</p>
+                </div>
+
+                <div className="space-y-4">
+                  <p className="text-xs uppercase tracking-widest font-bold opacity-60">Admin Signature</p>
+                  {pdfPlayer.adminSignature ? (
+                    <>
+                      <img src={pdfPlayer.adminSignature} alt="Admin Signature" className="h-24 object-contain bg-white/5 rounded-lg border border-white/10 p-2 w-full" />
+                      <p className="text-xs opacity-60">Countersigned</p>
+                    </>
+                  ) : (
+                    <div className="h-24 border-b border-white/20 w-full"></div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
