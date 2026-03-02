@@ -7,12 +7,7 @@ import { Player } from '../../types';
 
 const Header = () => (
   <header className="fixed top-0 left-0 w-full z-50 glass border-b border-white/5 px-6 py-4 flex justify-between items-center">
-    <div className="flex items-center gap-3">
-      <div className="w-8 h-8 flex items-center justify-center">
-        <img src="/src/logo.png" alt="Agency Dojo" className="w-full h-full object-contain" />
-      </div>
-      <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="font-display font-bold text-xl tracking-wider text-white cursor-pointer hover:opacity-80 transition-opacity">AGENCY CLAN <span className="text-agency-red">DOJO</span></a>
-    </div>
+    <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="font-display font-bold text-xl tracking-wider text-white cursor-pointer hover:opacity-80 transition-opacity">AGENCY CLAN <span className="text-agency-red">DOJO</span></a>
     <div className="hidden md:flex gap-8 text-xs font-medium uppercase tracking-[0.2em] text-white/60">
       <a href="#teams" className="hover:text-agency-red transition-colors">Academy Teams</a>
       <a href="#budget" className="hover:text-agency-red transition-colors">Financials</a>

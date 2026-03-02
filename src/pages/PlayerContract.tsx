@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { format, addMonths } from 'date-fns';
-import { Shield, CheckCircle, PenTool, LogOut, AlertCircle } from 'lucide-react';
+import { Shield, CheckCircle, PenTool, LogOut, AlertCircle, Download } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
 
 export default function PlayerContract() {
@@ -10,6 +10,7 @@ export default function PlayerContract() {
   const navigate = useNavigate();
   const sigCanvas = useRef<SignatureCanvas>(null);
 
+  const contractRef = useRef<HTMLDivElement>(null);
   const [nif, setNif] = useState('');
   const [address, setAddress] = useState('');
   const [consent, setConsent] = useState(false);
@@ -53,6 +54,37 @@ export default function PlayerContract() {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    const element = contractRef.current;
+    if (!element) return;
+
+    // html2canvas doesn't support backdrop-filter (glass class), use solid bg
+    const prevBg = element.style.background;
+    const prevBackdrop = element.style.backdropFilter;
+    const prevWebkitBackdrop = (element.style as any).webkitBackdropFilter || '';
+    element.style.background = '#333333';
+    element.style.backdropFilter = 'none';
+    (element.style as any).webkitBackdropFilter = 'none';
+
+    try {
+      const html2pdf = (await import('html2pdf.js')).default;
+      await html2pdf()
+        .set({
+          margin: 10,
+          filename: `contract-${player.nick}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, allowTaint: true, scrollY: -window.scrollY },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        })
+        .from(element)
+        .save();
+    } finally {
+      element.style.background = prevBg;
+      element.style.backdropFilter = prevBackdrop;
+      (element.style as any).webkitBackdropFilter = prevWebkitBackdrop;
+    }
+  };
+
   const isSigned = player.status === 'player_signed' || player.status === 'fully_signed';
 
   return (
@@ -83,7 +115,17 @@ export default function PlayerContract() {
           </div>
         )}
 
-        <div className="p-12 rounded-3xl glass border border-white/5 space-y-12 relative overflow-hidden">
+        {player.status === 'fully_signed' && (
+          <button
+            onClick={handleDownloadPDF}
+            className="w-full py-4 rounded-2xl bg-agency-red text-white font-bold text-lg hover:bg-agency-darkRed transition-colors flex items-center justify-center gap-3"
+          >
+            <Download size={20} />
+            Download PDF
+          </button>
+        )}
+
+        <div ref={contractRef} className="p-12 rounded-3xl glass border border-white/5 space-y-12 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-agency-red to-agency-darkRed"></div>
           
           <div className="text-center border-b border-white/10 pb-8">
@@ -153,12 +195,25 @@ export default function PlayerContract() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="font-bold uppercase tracking-widest text-agency-red mb-4 border-b border-white/10 pb-2">Cláusula 5ª (Cláusula de Rescisão) e Cláusula 6ª (Foro)</h3>
+              <h3 className="font-bold uppercase tracking-widest text-agency-red mb-4 border-b border-white/10 pb-2">Cláusula 5ª (Distribuição de Prémios)</h3>
+              <p>1. Os prémios obtidos em competições oficiais durante a vigência do contrato serão distribuídos da seguinte forma:</p>
+              <ul className="list-disc list-inside space-y-1 ml-4">
+                <li><strong>Eventos LAN:</strong> 40% para a Organização (TAC) — 60% para os Jogadores.</li>
+                <li><strong>Eventos Online:</strong> 30% para a Organização (TAC) — 70% para os Jogadores.</li>
+              </ul>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="font-bold uppercase tracking-widest text-agency-red mb-4 border-b border-white/10 pb-2">Cláusula 6ª (Cláusula de Rescisão) e Cláusula 7ª (Foro)</h3>
               <p>1. Qualquer contacto externo referente à transferência do Jogador deve ser obrigatoriamente direcionado à Organização ou ao Manager da equipa.</p>
               <p>2. Caso o Jogador decida abandonar a Organização antes do término do contrato, fica estipulada uma cláusula de rescisão (buyout) no valor de 200€ (duzentos euros), para compensar o investimento formativo realizado.</p>
               <p>3. Bónus de Renovação: Em caso de renovação bem-sucedida após os 4 meses iniciais, o Jogador será recompensado com a Jersey Oficial da Agency Clan.</p>
               <p>4. Para dirimir quaisquer litígios emergentes da interpretação ou execução deste contrato, as partes estipulam como competente o foro da Comarca do Porto, com expressa renúncia a qualquer outro.</p>
             </div>
+          </div>
+
+          <div className="text-center py-6 mt-8 border-t border-white/10">
+            <p className="text-xs uppercase tracking-widest font-bold text-white/60 italic">DIGITAL SIGNATURE — future Major sticker material. choose wisely.</p>
           </div>
 
           {!isSigned && (

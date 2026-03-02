@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { format, addMonths } from 'date-fns';
-import { Shield, CheckCircle, PenTool, Printer, LogOut, X } from 'lucide-react';
+import { Shield, CheckCircle, PenTool, Printer, LogOut, X, Download } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
 import { Player } from '../../types';
 
@@ -30,8 +30,48 @@ export default function AdminDashboard() {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const contractRef = useRef<HTMLDivElement>(null);
+
+  const handleDownloadPDF = async (player: Player) => {
+    setSelectedPlayer(player);
+    // Wait for modal to render
+    await new Promise(r => setTimeout(r, 500));
+    const element = contractRef.current;
+    if (!element) return;
+
+    // Temporarily remove scroll/overflow constraints so html2canvas captures everything
+    const overlay = element.parentElement;
+    const prevMaxH = element.style.maxHeight;
+    const prevOverflow = element.style.overflow;
+    const prevOverlayPos = overlay?.style.position || '';
+    const prevOverlayOverflow = overlay?.style.overflow || '';
+    element.style.maxHeight = 'none';
+    element.style.overflow = 'visible';
+    if (overlay) {
+      overlay.style.position = 'absolute';
+      overlay.style.overflow = 'visible';
+    }
+
+    try {
+      const html2pdf = (await import('html2pdf.js')).default;
+      await html2pdf()
+        .set({
+          margin: 10,
+          filename: `contract-${player.nick}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, allowTaint: true, scrollY: -window.scrollY },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        })
+        .from(element)
+        .save();
+    } finally {
+      element.style.maxHeight = prevMaxH;
+      element.style.overflow = prevOverflow;
+      if (overlay) {
+        overlay.style.position = prevOverlayPos;
+        overlay.style.overflow = prevOverlayOverflow;
+      }
+    }
   };
 
   const stats = {
@@ -115,12 +155,12 @@ export default function AdminDashboard() {
                       </button>
                     )}
                     {player.status === 'fully_signed' && (
-                      <button 
-                        onClick={() => { setSelectedPlayer(player); setTimeout(handlePrint, 100); }}
+                      <button
+                        onClick={() => handleDownloadPDF(player)}
                         className="px-4 py-2 bg-white/10 text-white rounded-lg text-sm font-bold hover:bg-white/20 transition-colors flex items-center gap-2 ml-auto"
                       >
-                        <Printer size={16} />
-                        Print Contract
+                        <Download size={16} />
+                        Download PDF
                       </button>
                     )}
                   </td>
@@ -134,8 +174,8 @@ export default function AdminDashboard() {
       {/* Countersign Modal / Print View */}
       {selectedPlayer && (
         <div className={`fixed inset-0 z-50 flex items-center justify-center p-8 ${selectedPlayer.status === 'fully_signed' ? 'bg-white text-black print-only-modal' : 'bg-black/80 backdrop-blur-sm'}`}>
-          <div className={`w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl ${selectedPlayer.status === 'fully_signed' ? 'bg-white' : 'bg-agency-darkGray border border-white/10'} p-12 relative`}>
-            
+          <div ref={contractRef} className={`w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl ${selectedPlayer.status === 'fully_signed' ? 'bg-white' : 'bg-agency-darkGray border border-white/10'} p-12 relative`}>
+
             <button 
               onClick={() => setSelectedPlayer(null)}
               className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 transition-colors no-print"
@@ -187,7 +227,16 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-black/10 pb-2">Cláusula 5ª (Cláusula de Rescisão) e Cláusula 6ª (Foro)</h3>
+                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-black/10 pb-2">Cláusula 5ª (Distribuição de Prémios)</h3>
+                  <p>1. Os prémios obtidos em competições oficiais durante a vigência do contrato serão distribuídos da seguinte forma:</p>
+                  <ul className="list-disc list-inside space-y-1 ml-4">
+                    <li><strong>Eventos LAN:</strong> 40% para a Organização (TAC) — 60% para os Jogadores.</li>
+                    <li><strong>Eventos Online:</strong> 30% para a Organização (TAC) — 70% para os Jogadores.</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-bold uppercase tracking-widest mb-4 border-b border-black/10 pb-2">Cláusula 6ª (Cláusula de Rescisão) e Cláusula 7ª (Foro)</h3>
                   <p>1. Qualquer contacto externo referente à transferência do Jogador deve ser obrigatoriamente direcionado à Organização ou ao Manager da equipa.</p>
                   <p>2. Caso o Jogador decida abandonar a Organização antes do término do contrato, fica estipulada uma cláusula de rescisão (buyout) no valor de 200€ (duzentos euros), para compensar o investimento formativo realizado.</p>
                   <p>3. Bónus de Renovação: Em caso de renovação bem-sucedida após os 4 meses iniciais, o Jogador será recompensado com a Jersey Oficial da Agency Clan.</p>
@@ -195,7 +244,11 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-12 pt-12 mt-12 border-t border-black/10">
+              <div className="text-center py-6 mt-8 border-t border-black/10">
+                <p className="text-xs uppercase tracking-widest font-bold opacity-60 italic">DIGITAL SIGNATURE — future Major sticker material. choose wisely.</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-12 pt-12 mt-4 border-t border-black/10">
                 <div className="space-y-4">
                   <p className="text-xs uppercase tracking-widest font-bold opacity-60">Player Signature</p>
                   {selectedPlayer.playerSignature ? (
