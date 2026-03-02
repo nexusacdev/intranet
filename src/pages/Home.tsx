@@ -124,7 +124,7 @@ const BudgetSection = () => (
           </div>
           <div>
             <p className="text-xs text-agency-muted uppercase font-bold tracking-widest">Duration</p>
-            <p className="text-xl font-display text-white">{CONTRACT_DATA.period}</p>
+            <p className="text-xl font-display text-white">4 Months from Signature</p>
           </div>
         </div>
         <div className="p-6 rounded-2xl glass flex items-center gap-5">
