@@ -99,7 +99,17 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const auth = getAuth();
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+      return res.status(500).json({ success: false, error: 'GOOGLE_SERVICE_ACCOUNT_KEY env var is missing' });
+    }
+
+    let auth;
+    try {
+      auth = getAuth();
+    } catch (e) {
+      return res.status(500).json({ success: false, error: 'Failed to parse service account key: ' + e.message });
+    }
+
     const sheets = google.sheets({ version: 'v4', auth });
 
     if (req.method === 'GET') {
